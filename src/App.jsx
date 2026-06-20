@@ -2,16 +2,30 @@ import { useState, useMemo } from 'react';
 import './App.css';
 import data from './data/questions.json';
 
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function getShuffledQuestions(categoryId) {
+  const filtered = data.questions.filter((q) => q.categoryId === categoryId);
+  return shuffleArray(filtered);
+}
+
 function App() {
-  const [activeCategory, setActiveCategory] = useState('frontend');
+  const initialCategory = useMemo(() => {
+    return data.categories[Math.floor(Math.random() * data.categories.length)].id;
+  }, []);
+
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [currentQuestions, setCurrentQuestions] = useState(() => getShuffledQuestions(initialCategory));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteredIds, setMasteredIds] = useState(new Set());
-
-  // Filter questions by active category
-  const currentQuestions = useMemo(() => {
-    return data.questions.filter((q) => q.categoryId === activeCategory);
-  }, [activeCategory]);
 
   const currentQuestion = currentQuestions[currentIndex];
 
@@ -45,6 +59,7 @@ function App() {
 
   const selectCategory = (id) => {
     setActiveCategory(id);
+    setCurrentQuestions(getShuffledQuestions(id));
     setCurrentIndex(0);
     setIsFlipped(false);
   };
